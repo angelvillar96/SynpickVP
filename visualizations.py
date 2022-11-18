@@ -7,7 +7,7 @@ import torch
 from matplotlib import pyplot as plt
 import imageio
 from webcolors import name_to_rgb
-import torch.nn.functional as F
+# import torch.nn.functional as F
 from torchvision.utils import draw_segmentation_masks
 
 
@@ -18,13 +18,18 @@ COLORS = ["blue", "green", "olive", "red", "yellow", "purple", "orange", "cyan",
           "darkcyan", "sandybrown"]
 
 
-def make_gif(frames, savepath, n_seed=4):
+def make_gif(frames, savepath, n_seed=4, use_border=False):
     """ Making a GIF with the frames """
     with imageio.get_writer(savepath, mode='I') as writer:
         for i, frame in enumerate(frames):
-            up_frame = F.upsample(frame.unsqueeze(0), scale_factor=2)[0]  # to make it larger
-            up_frame = up_frame.permute(1, 2, 0).cpu().detach().clamp(0, 1)
-            disp_frame = add_border(up_frame, color="green") if i < n_seed else add_border(up_frame, color="red")
+            # up_frame = F.inter(frame.unsqueeze(0), scale_factor=2)[0]  # to make it larger
+            up_frame = frame.cpu().detach().clamp(0, 1)
+            if use_border:
+                color = "green" if i < n_seed else "red"
+                disp_frame = add_border(up_frame, color=color)
+            else:
+                disp_frame = up_frame
+            disp_frame = (disp_frame * 255).to(torch.uint8).permute(1, 2, 0).numpy()
             writer.append_data(disp_frame)
 
 
