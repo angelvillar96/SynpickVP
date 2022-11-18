@@ -9,11 +9,11 @@ SynpickVP is formed by processing a selection of from the [Synpick dataset](http
  - The robotic gripper is in the box
  - The robotic gripper is moving in the sequence
 
-![Alt Text](_Resources/imgs_1.gif) ![Alt Text](_Resources/segs_1.gif)
+![Alt Text](Resources/imgs_1.gif) ![Alt Text](Resources/segs_1.gif)
 
-![Alt Text](_Resources/imgs_5.gif) ![Alt Text](_Resources/segs_5.gif)
+![Alt Text](Resources/imgs_5.gif) ![Alt Text](Resources/segs_5.gif)
 
-![Alt Text](_Resources/imgs_5.gif) ![Alt Text](_Resources/segs_6.gif)
+![Alt Text](Resources/imgs_6.gif) ![Alt Text](Resources/segs_6.gif)
 
 
 
