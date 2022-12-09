@@ -63,6 +63,7 @@ class SynpickVP:
         self.data_dir = os.path.join(SynpickVP.DATA_PATH, split)
         if not os.path.exists(self.data_dir):
             raise FileNotFoundError(f"Synpick dataset does not exist in {self.data_dir}...")
+        print(f"Loading SypickVP {split} set...")
         num_frames = self._check_num_frames_param(split=split, num_frames=num_frames)
 
         self.split = split
@@ -75,10 +76,12 @@ class SynpickVP:
         images_dir = os.path.join(self.data_dir, "rgb")
         scene_dir = os.path.join(self.data_dir, "scene_gt")
         masks_dir = os.path.join(self.data_dir, "masks")
+        instances_dir = os.path.join(self.data_dir, "instance_masks")
         self.image_ids = sorted(os.listdir(images_dir))
         self.image_fps = [os.path.join(images_dir, image_id) for image_id in self.image_ids]
         self.scene_gt_fps = [os.path.join(scene_dir, scene) for scene in sorted(os.listdir(scene_dir))]
         self.mask_fps = [os.path.join(masks_dir, mask_fp) for mask_fp in sorted(os.listdir(masks_dir))]
+        self.instance_fps = [os.path.join(instances_dir, inst_fp) for inst_fp in sorted(os.listdir(instances_dir))]
 
         # obtaining pose information from the different objectd
         self.object_poses = {}
@@ -105,14 +108,23 @@ class SynpickVP:
         imgs = np.stack(imgs, axis=0)
         imgs = torch.Tensor(imgs).permute(0, 3, 1, 2)
         imgs = transforms.Resize(self.img_size)(imgs)
-        segmentation = self._get_segmentation_maps(idx, num_classes=self.NUM_CLASSES)
+        segmentation = self._get_segmentation_maps(
+                path=self.mask_fps,
+                idx=idx
+            )
+        instance = self._get_segmentation_maps(
+                path=self.instance_fps,
+                idx=idx
+            )
 
-        data = {"frames": imgs, "segmentation": segmentation}
+        data = {"frames": imgs, "segmentation": segmentation, "instance": instance}
         return data
 
-    def _get_segmentation_maps(self, idx, num_classes):
+    def _get_segmentation_maps(self, path, idx):
         """ Loading segmentation maps for sequence idx """
-        seg_maps = np.array([imageio.imread(self.mask_fps[id_]) for id_ in idx])
+        seg_maps = np.array([imageio.imread(path[id_]) for id_ in idx])
+        if len(seg_maps.shape) == 4:
+            seg_maps = seg_maps[..., 0]
         seg_maps = torch.from_numpy(seg_maps)
         seg_maps = transforms.Resize(
                 size=self.img_size,

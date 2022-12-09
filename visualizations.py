@@ -135,5 +135,43 @@ def overlay_segmentation(img, segmentation, colors, num_classes, alpha=0.7):
     return img_with_seg / 255
 
 
+def overlay_instances(frames, instances, colors, alpha):
+    """
+    Overlay instance segmentations on a sequence of images
+    """
+    if colors[0] != "white":  # background should always be white
+        colors = ["white"] + colors
+    if frames.max() <= 1:
+        frames = frames * 255
+    frames = frames.to(torch.uint8)
+
+    imgs = []
+    for frame, instance in zip(frames, instances):
+        img = overlay_instance(frame, instance, colors, alpha)
+        imgs.append(img)
+    imgs = torch.stack(imgs)
+    return imgs
+
+
+def overlay_instance(img, instance, colors, alpha=0.7):
+    """
+    Overlaying the segmentation on an image
+    """
+    if colors[0] != "white":  # background should always be white
+        colors = ["white"] + colors
+    if img.max() <= 1:
+        img = img * 255
+    img = img.to(torch.uint8)
+    instance_ids = instance.unique()
+    instance_masks = (instance[0] == instance_ids[:, None, None].to(instance.device))
+    cur_colors = [colors[idx.item()] for idx in instance_ids]
+    img_with_seg = draw_segmentation_masks(
+            img,
+            masks=instance_masks,
+            alpha=alpha,
+            colors=cur_colors
+        )
+    return img_with_seg / 255
+
 
 #
