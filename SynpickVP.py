@@ -33,6 +33,9 @@ class SynpickVP:
         For instance, 0.25 means that consecutive sequence will overlap for (1 - 0.25)=75% of the frames
     img_size: tuple
         Images are resized to this resolution
+    crop_size: tuple of ints or int, optional
+        size the images are center-cropped to; an int is used for both sides
+
     """
 
     DATA_PATH = "/home/nfs/inf6/data/datasets/SynpickRaw/processed"
@@ -54,7 +57,7 @@ class SynpickVP:
             "test": [50, 50],  # please keep this fixed
         }
 
-    def __init__(self, split, num_frames, seq_step=2, max_overlap=0.25, img_size=(136, 240)):
+    def __init__(self, split, num_frames, seq_step=2, max_overlap=0.25, img_size=(136, 240), crop_size=None):
         """
         Dataset initializer
         """
@@ -68,6 +71,10 @@ class SynpickVP:
 
         self.split = split
         self.img_size = img_size
+        if crop_size is None:
+            self.crop = None
+        else:
+            self.crop = transforms.CenterCrop(crop_size)
         self.num_frames = num_frames
         self.seq_step = seq_step
         self.max_overlap = max_overlap
@@ -116,6 +123,10 @@ class SynpickVP:
                 path=self.instance_fps,
                 idx=idx
             )
+        if self.crop is not None:
+            imgs=self.crop(imgs)
+            segmentation=self.crop(segmentation)
+            instance=self.crop(instance)
 
         data = {"frames": imgs, "segmentation": segmentation, "instance": instance}
         return data
