@@ -67,6 +67,7 @@ class SynpickVP:
         if not os.path.exists(self.data_dir):
             raise FileNotFoundError(f"Synpick dataset does not exist in {self.data_dir}...")
         print(f"Loading SypickVP {split} set...")
+        self.num_frames_out=num_frames
         num_frames = self._check_num_frames_param(split=split, num_frames=num_frames)
 
         self.split = split
@@ -107,7 +108,7 @@ class SynpickVP:
     def __getitem__(self, i):
         """ Sampling sequence from the dataset """
         i = self.valid_idx[i]  # only consider valid indices
-        seq_len = (self.num_frames - 1) * self.seq_step + 1
+        seq_len = (self.num_frames_out - 1) * self.seq_step + 1
         idx = range(i, i + seq_len, self.seq_step)  # create range of indices for frame sequence
         imgs = [imageio.imread(self.image_fps[id_]) / 255. for id_ in idx]
 
